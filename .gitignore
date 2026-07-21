@@ -1,0 +1,23 @@
+# Segredos — nunca versionar
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+venv-win/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+.next/
+
+# Logs
+*.log
+
+# Deploy / DB SQLite
+database.sqlite
+deploy.zip
+deploy-vps.ps1
