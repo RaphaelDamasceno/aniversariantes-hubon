@@ -27,7 +27,7 @@ Referência de negócio completa: docs/PRD.md
 **Objetivo:** eliminar as incertezas do PRD antes de qualquer linha de código.
 
 **Critérios de aceitação:**
-- [x] Confirmado se o banco de colaboradores tem campo de gestor/supervisor direto.
+- [x] Confirmado se o banco de colaboradores não utilizará campo de gestor direto neste escopo.
 - [x] Confirmado como identificar C-level (campo no banco, planilha à parte, ou lista fixa).
 - [x] Confirmado valor e regra do benefício (sempre R$100? alguma exceção?).
 - [x] Definida a lista de distribuição inicial do e-mail semanal.
@@ -40,7 +40,7 @@ Referência de negócio completa: docs/PRD.md
 
 ## Módulo 1 — Sync DB → Base intermediária
 
-**Objetivo:** replicar periodicamente os dados mínimos necessários (nome, data de nascimento, área, gestor) do banco de colaboradores (via VPN) para uma base intermediária acessível pela aplicação.
+**Objetivo:** replicar periodicamente os dados mínimos necessários (nome, data de nascimento, área) do banco de colaboradores (via VPN) para uma base intermediária acessível pela aplicação.
 
 **Critérios de aceitação:**
 - [x] Script/job conecta ao banco de colaboradores via VPN e lê apenas os campos necessários.
@@ -58,14 +58,14 @@ Crie um script de sincronização em [linguagem de sua preferência, ex: Python/
 que:
 1. Conecta a um banco de colaboradores (schema: ver docs/PRD.md, seção 7 —
    pedir para eu colar o schema real das tabelas relevantes).
-2. Lê apenas: nome, data de nascimento, área/cargo, gestor direto (se existir).
+2. Lê apenas: nome, data de nascimento, área/cargo.
 3. Grava esses dados numa base intermediária local (Postgres) com uma tabela
    "colaboradores" simples.
 4. Roda via variável de ambiente para host/usuário/senha do banco de origem
    (nunca hardcode).
 5. Gere um .env.example com os nomes das variáveis necessárias.
 6. Adicione um modo --dry-run que só imprime o que seria sincronizado.
-7. Gere testes cobrindo: colaborador sem gestor definido, datas inválidas,
+7. Gere testes cobrindo: datas inválidas,
    e reprocessamento (não duplicar registros ao rodar de novo).
 
 Não implemente autenticação nem interface aqui — só o job de sync.
@@ -90,7 +90,7 @@ Não implemente autenticação nem interface aqui — só o job de sync.
 Contexto: leia docs/PRD.md e as regras do projeto.
 
 A base intermediária de colaboradores já existe (tabela "colaboradores" com
-nome, data_nascimento, area, gestor). Crie:
+nome, data_nascimento, area). Crie:
 
 1. Uma API REST com dois endpoints:
    - GET /aniversariantes/hoje
@@ -136,11 +136,11 @@ ou deixe o agente sugerir].
 - [ ] Workflow identifica corretamente os aniversariantes do dia (consumindo o endpoint `/aniversariantes/hoje` do Módulo 2).
 - [ ] Mensagem de parabéns é enviada ao colaborador.
 - [ ] Mensagem é enviada ao número do DP, citando nome do colaborador e valor do benefício.
-- [ ] Mensagem é enviada ao(s) C-level(s) e ao supervisor direto do colaborador (requer o dado de gestor mapeado no Módulo 1).
-- [ ] Se o colaborador não tiver supervisor/gestor mapeado, o workflow não quebra — apenas pula esse envio e loga o caso.
+- [ ] Mensagem é enviada ao(s) C-level(s).
+- [ ] O workflow não quebra em casos de erro — apenas loga o caso.
 - [ ] Números de telefone e templates de mensagem são configuráveis, não hardcoded.
 
-> Também tende a ser mais rápido montar direto no n8n. Peça ajuda ao Antigravity só se precisar de um endpoint auxiliar (ex: `/aniversariantes/hoje/detalhado` retornando também o gestor e C-level responsável) para o n8n consumir.
+> Também tende a ser mais rápido montar direto no n8n. Peça ajuda ao Antigravity só se precisar de um endpoint auxiliar (ex: `/aniversariantes/hoje/detalhado`) para o n8n consumir.
 
 ---
 

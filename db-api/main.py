@@ -70,16 +70,12 @@ pool = None
 async def lifespan(_app):
     """Cria o pool ao subir a API e fecha ao desligar."""
     global pool
-    try:
-        pool = await aiomysql.create_pool(**DB_CONFIG)
-        log.info("Pool pronto (%s-%s conex\u00f5es)", DB_CONFIG["minsize"], DB_CONFIG["maxsize"])
-    except Exception as e:
-        log.error("Falha ao criar pool de conex\u00f5es: %s. A API continuar\u00e1 em modo de fallback (CSV).", e)
+    pool = await aiomysql.create_pool(**DB_CONFIG)
+    log.info("Pool pronto (%s-%s conex\u00f5es)", DB_CONFIG["minsize"], DB_CONFIG["maxsize"])
     yield
-    if pool:
-        pool.close()
-        await pool.wait_closed()
-        log.info("Pool fechado")
+    pool.close()
+    await pool.wait_closed()
+    log.info("Pool fechado")
 
 
 # Aplicação
@@ -152,40 +148,17 @@ async def unhandled_exception(request: Request, exc: Exception):
 
 @app.post("/query", dependencies=[Depends(require_api_key)])
 async def run_query(body: QueryIn):
-    """Executa SELECT e retorna o resultado. Fallback para CSV se o banco estiver fora."""
-    if pool:
-        try:
-            async with pool.acquire() as conn:
-                async with conn.cursor(aiomysql.DictCursor) as cur:
-                    await cur.execute(body.sql, body.params or None)
-                    rows = await cur.fetchall()
-                    return {
-                        "ok": True,
-                        "rows": rows,
-                        "count": len(rows),
-                        "columns": [col[0] for col in cur.description] if cur.description else [],
-                    }
-        except Exception as e:
-            log.error("Erro na query ao banco: %s. Tentando fallback para CSV.", e)
-
-    # Fallback: Ler do arquivo CSV se a query for o SELECT padr\u00e3o do dashboard
-    csv_path = os.path.join("..", "suporte_hub_202604141717.csv")
-    if os.path.exists(csv_path):
-        log.info("Servindo dados via Fallback (CSV)")
-        import csv
-        with open(csv_path, encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            rows = list(reader)
-            # Simular filtro simples se necess\u00e1rio, mas pro dashboard servimos tudo
+    """Executa SELECT e retorna o resultado."""
+    async with pool.acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            await cur.execute(body.sql, body.params or None)
+            rows = await cur.fetchall()
             return {
                 "ok": True,
                 "rows": rows,
                 "count": len(rows),
-                "columns": list(rows[0].keys()) if rows else [],
-                "source": "csv_fallback"
+                "columns": [col[0] for col in cur.description] if cur.description else [],
             }
-    
-    return {"ok": False, "detail": "Banco de dados inacess\u00edvel e arquivo CSV n\u00e3o encontrado"}
 
 
 @app.post("/execute", dependencies=[Depends(require_api_key)])
@@ -210,22 +183,13 @@ async def run_execute(body: ExecuteIn):
 @app.get("/health")
 async def healthcheck():
     """Verifica se a API e o banco estão funcionando."""
-    status = {"ok": True, "database": "disconnected", "fallback": "active"}
-    if pool:
-        try:
-            async with pool.acquire() as conn:
-                async with conn.cursor() as cur:
-                    await cur.execute("SELECT 1")
-            status["database"] = "connected"
-            status["pool_size"] = pool.size
-            status["pool_free"] = pool.freesize
-        except Exception as exc:
-            status["ok"] = False
-            status["database_error"] = str(exc)
-    
-    csv_path = os.path.join("..", "suporte_hub_202604141717.csv")
-    status["csv_exists"] = os.path.exists(csv_path)
-    return status
+    try:
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("SELECT 1")
+        return {"ok": True, "pool_size": pool.size, "pool_free": pool.freesize}
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
 
 
 if __name__ == "__main__":

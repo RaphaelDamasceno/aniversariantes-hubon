@@ -30,7 +30,7 @@ Criar uma solução que centralize e distribua a informação de aniversariantes
 
 | Perfil | Necessidade |
 |---|---|
-| Marketing | Ver aniversariantes do dia/semana para criar cards |
+| Marketing | Ver aniversariantes do dia/semana/mês para criar cards |
 | Financeiro / DP | Ser notificado para processar os R$100 do aniversário |
 | C-level e Supervisor do colaborador | Receber aviso do aniversário do liderado (via WhatsApp) |
 | Colaborador (corretor ou administrativo) | Ser lembrado de retirar o valor com o DP |
@@ -39,7 +39,7 @@ Criar uma solução que centralize e distribua a informação de aniversariantes
 ## 5. Escopo — Fase 1 (MVP)
 
 ### 5.1 Painel web (fonte da verdade)
-- Lista de aniversariantes **do dia** e **da semana**.
+- Lista de aniversariantes **do dia**, **da semana** e **do mês** (com rota para todos os dados, útil para QA).
 - Campos: nome, data de nascimento (ou só dia/mês, ver seção 9), área/cargo (útil para o Marketing segmentar).
 - Atualização automática a partir do banco de colaboradores (sync periódico, não precisa ser "real time" no sentido literal — ver seção 8).
 - Acesso via login interno (não pode ser público, ver seção 9 — LGPD).
@@ -67,7 +67,7 @@ No dia do aniversário, disparar:
 ## 7. Fonte de dados
 
 - Banco de dados local de colaboradores (corretores + administrativo), acessível **somente via VPN**.
-- Contém: nome, data de nascimento, e (a confirmar) cargo/área/gestor.
+- Contém: nome, data de nascimento, e (a confirmar) cargo/área.
 
 ## 8. Arquitetura proposta (visão de alto nível)
 
@@ -83,7 +83,7 @@ No dia do aniversário, disparar:
 
 **Por que um "meio de campo" (base intermediária) e não consultar o DB direto:**
 - O DB só é acessível via VPN — a aplicação web e o n8n provavelmente não vão rodar dentro dessa rede o tempo todo.
-- Um job de sincronização (rodando numa máquina/servidor que tem acesso à VPN) replica periodicamente só os campos necessários (nome, data nascimento, área, gestor) para uma base separada, mais leve e sem dados sensíveis demais.
+- Um job de sincronização (rodando numa máquina/servidor que tem acesso à VPN) replica periodicamente só os campos necessários (nome, data nascimento, área) para uma base separada, mais leve e sem dados sensíveis demais.
 - Isso também evita expor a base de RH inteira para o painel e pro n8n — só replica o mínimo necessário.
 
 Esse ponto é o mais crítico tecnicamente e o que mais vai definir prazo — ver seção 9.
@@ -91,7 +91,7 @@ Esse ponto é o mais crítico tecnicamente e o que mais vai definir prazo — ve
 ## 9. Riscos, dependências e perguntas em aberto
 
 1. **VPN + automação:** quem/o quê vai rodar o sync de dentro da rede com VPN? Precisa de uma máquina/servidor com acesso permanente, ou um job agendado que sobe a VPN, sincroniza e desce.
-2. **Hierarquia (supervisor/C-level):** o banco de colaboradores tem campo de "gestor direto"? Se não tiver, é um levantamento manual/planilha à parte que vai precisar ser mantida.
+2. **Hierarquia:** Este projeto não gerencia ou utiliza o gestor direto/supervisor do colaborador (funcionalidade removida).
 3. **LGPD / dado sensível:** data de nascimento é dado pessoal. Definir quem pode acessar o painel (login obrigatório, sem exposição pública) e não expor isso em canais amplos.
 4. **Número de WhatsApp:** já existe um número de DP e uma lista de C-level/supervisores mapeada para o Evolution API, ou isso precisa ser cadastrado?
 5. **Regra dos R$100:** é sempre R$100 fixo pra todo mundo (corretor e administrativo)? Tem alguma condição (tempo de casa, etc.)?
@@ -99,7 +99,7 @@ Esse ponto é o mais crítico tecnicamente e o que mais vai definir prazo — ve
 
 ## 10. Critérios de aceite (MVP)
 
-- [ ] Painel mostra corretamente aniversariantes do dia e da semana, batendo com o banco de colaboradores.
+- [ ] Painel mostra corretamente aniversariantes do dia, da semana e do mês, batendo com o banco de colaboradores.
 - [ ] E-mail semanal é disparado toda segunda-feira, sem falha, para a lista configurada.
 - [ ] Mensagem de WhatsApp para o colaborador, DP, C-level e supervisor é disparada no dia certo, para o número certo.
 - [ ] Acesso ao painel exige autenticação.
