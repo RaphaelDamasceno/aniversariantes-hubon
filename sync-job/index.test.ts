@@ -40,15 +40,13 @@ describe('syncColaboradores', () => {
                 id: 1,
                 nome: 'João Silva',
                 data_nascimento: '1990-01-01',
-                cargo_principal: 'Assistente',
-                is_clevel: 0
+                cargo_principal: 'Assistente'
             },
             {
                 id: 2,
                 nome: 'Maria Souza',
                 data_nascimento: '1985-05-15',
-                cargo_principal: 'COO',
-                is_clevel: 1
+                cargo_principal: 'COO'
             }
         ];
 
@@ -58,9 +56,7 @@ describe('syncColaboradores', () => {
         
         expect(rows).toHaveLength(2);
         expect(rows[0].nome).toBe('João Silva');
-        expect(rows[0].is_clevel).toBe(0);
         expect(rows[1].nome).toBe('Maria Souza');
-        expect(rows[1].is_clevel).toBe(1);
     });
 
     it('should not duplicate when running multiple times', async () => {
@@ -69,8 +65,7 @@ describe('syncColaboradores', () => {
                 id: 3,
                 nome: 'Carlos Costa',
                 data_nascimento: '1992-10-20',
-                cargo_principal: 'Analista',
-                is_clevel: 0
+                cargo_principal: 'Analista'
             }
         ];
 
@@ -93,8 +88,7 @@ describe('syncColaboradores', () => {
                 id: 4,
                 nome: 'Sem Data',
                 data_nascimento: null as any,
-                cargo_principal: 'Recepcionista',
-                is_clevel: 0
+                cargo_principal: 'Recepcionista'
             }
         ];
 
@@ -113,8 +107,7 @@ describe('syncColaboradores', () => {
                 id: 5,
                 nome: 'Data Invalida',
                 data_nascimento: '0000-00-00',
-                cargo_principal: 'Analista',
-                is_clevel: 0
+                cargo_principal: 'Outro'
             }
         ];
 

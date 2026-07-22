@@ -12,7 +12,6 @@ export interface Colaborador {
   nome: string;
   data_nascimento: string;
   cargo_principal: string | null;
-  is_clevel: number;
   synced_at: string;
 }
 

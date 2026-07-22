@@ -17,7 +17,6 @@ export interface ColaboradorDB {
     nome: string;
     data_nascimento: string;
     cargo_principal: string;
-    is_clevel: number;
 }
 
 export async function fetchColaboradores(): Promise<ColaboradorDB[]> {
@@ -30,8 +29,7 @@ export async function fetchColaboradores(): Promise<ColaboradorDB[]> {
             id_corretor AS id,
             nome,
             datanascimento AS data_nascimento,
-            cargo_principal,
-            (socio_ativo = 1 AND cargo_principal IN ('COO', 'CPO', 'Sócio')) AS is_clevel
+            cargo_principal
         FROM 
             corpstek_corretores
         WHERE 
@@ -81,8 +79,8 @@ export async function syncColaboradores(colaboradores: ColaboradorDB[]) {
         await db.run('DELETE FROM colaboradores');
         
         const stmt = await db.prepare(`
-            INSERT INTO colaboradores (id, nome, data_nascimento, cargo_principal, is_clevel)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO colaboradores (id, nome, data_nascimento, cargo_principal)
+            VALUES (?, ?, ?, ?)
         `);
         
         for (const colab of colaboradores) {
@@ -90,8 +88,7 @@ export async function syncColaboradores(colaboradores: ColaboradorDB[]) {
                 colab.id,
                 colab.nome,
                 colab.data_nascimento,
-                colab.cargo_principal,
-                colab.is_clevel ? 1 : 0
+                colab.cargo_principal
             );
         }
         

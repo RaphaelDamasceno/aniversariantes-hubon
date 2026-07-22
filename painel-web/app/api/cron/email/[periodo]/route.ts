@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db, { Colaborador } from '@/lib/db';
+import dbConfig, { EmailDestinatario } from '@/lib/db-config';
 import { isBirthdayToday, isBirthdayThisWeek, isBirthdayThisMonth } from '@/lib/date-rules';
 import { sendEmail } from '@/lib/mailer';
 
@@ -34,11 +35,15 @@ export async function GET(
       descricao = 'Confira os aniversariantes deste mês!';
     }
 
-    const to = process.env.EMAIL_TO;
-    
-    if (!to) {
-      return NextResponse.json({ error: 'Variável EMAIL_TO não configurada no .env' }, { status: 500 });
+    const destinatarios = dbConfig
+      .prepare('SELECT email FROM email_destinatarios')
+      .all() as Pick<EmailDestinatario, 'email'>[];
+
+    if (destinatarios.length === 0) {
+      return NextResponse.json({ error: 'Nenhum destinatário cadastrado. Adicione e-mails na seção de Configurações do painel.' }, { status: 500 });
     }
+
+    const to = destinatarios.map(d => d.email).join(', ');
 
     // Montar o HTML
     let html = `
