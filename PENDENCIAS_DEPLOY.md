@@ -1,6 +1,6 @@
 # Pendências de Deploy - MVP Finalizado
 
-Todo o escopo de código do projeto (Fase 1 / Módulo 1 ao 3) está concluído, auditado e enviado para o GitHub. A Fase 2 foi formalmente cancelada do escopo.
+Todo o escopo de código do projeto está concluído, auditado e enviado para o GitHub.
 
 Para colocar o sistema definitivamente no ar, restam apenas os passos operacionais abaixo na infraestrutura:
 
