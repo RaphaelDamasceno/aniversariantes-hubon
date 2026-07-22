@@ -31,7 +31,7 @@ if (!cronSecret) {
 const options = {
   hostname: 'localhost',
   port: 3000,
-  path: `/api/cron/email/${type}`,
+  path: `/aniversariantes/api/cron/email/${type}`,
   method: 'GET',
   headers: {}
 };

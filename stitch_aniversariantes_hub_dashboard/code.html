@@ -1,0 +1,322 @@
+<!DOCTYPE html><html lang="pt-BR" class="dark" style=""><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
+        try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        "colors": {
+                            "primary": "#c0c1ff",
+                            "on-primary": "#1000a9",
+                            "primary-container": "#8083ff",
+                            "on-primary-container": "#0d0096",
+                            "secondary": "#ddb7ff",
+                            "tertiary": "#ffb783",
+                            "background": "#131315",
+                            "on-background": "#e5e1e4",
+                            "surface": "#131315",
+                            "on-surface": "#e5e1e4",
+                            "surface-variant": "#353437",
+                            "on-surface-variant": "#c7c4d7",
+                            "outline": "#908fa0",
+                            "surface-container": "#201f22",
+                            "surface-container-low": "#1c1b1d",
+                            "surface-container-high": "#2a2a2c",
+                            "surface-container-highest": "#353437",
+                            "brand-slate": "#020617" // Slate-950
+                        },
+                        "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                        },
+                        "spacing": {
+                            "unit": "4px",
+                            "margin-desktop": "40px",
+                            "stack-sm": "8px",
+                            "stack-md": "16px",
+                            "gutter": "24px",
+                            "container-max": "1200px",
+                            "stack-lg": "32px",
+                            "margin-mobile": "16px"
+                        },
+                        "fontFamily": {
+                            "body-md": ["Inter"],
+                            "body-lg": ["Inter"],
+                            "headline-md": ["Outfit"],
+                            "headline-lg": ["Outfit"],
+                            "display": ["Outfit"]
+                        },
+                        "fontSize": {
+                            "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                            "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                            "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                            "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                            "label-sm": ["12px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                            "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}]
+                        }
+                    },
+                },
+            }
+        } catch (_e) {}
+    }catch(_e){}</script></head><body class="font-body-md bg-brand-slate text-on-surface selection:bg-primary-container selection:text-on-primary-container min-h-screen">
+
+    <!-- Mobile Nav Header (Visible only on small screens) -->
+    <header class="lg:hidden fixed top-0 w-full z-50 bg-brand-slate/80 backdrop-blur-xl border-b border-white/10 flex justify-between items-center px-4 h-16">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary" data-original-icon="auto_awesome">auto_awesome</span>
+            <span class="font-headline-md text-lg font-bold">Hubon</span>
+        </div>
+        <label for="sidebar-toggle" class="p-2 cursor-pointer">
+            <span class="material-symbols-outlined">menu</span>
+        </label>
+    </header>
+
+    <input type="checkbox" id="sidebar-toggle" class="hidden">
+
+    <!-- Shell: SideNavBar -->
+    <aside class="fixed left-0 top-0 h-full w-64 bg-brand-slate border-r border-white/10 flex flex-col z-50 transition-transform -translate-x-full lg:translate-x-0">
+        <!-- Logo Area-->
+        <div class="p-6 flex items-center gap-stack-md">
+            <div class="h-8 w-8 rounded bg-primary flex items-center justify-center">
+                
+            </div>
+            <span class="font-headline-md text-xl font-bold tracking-tight text-on-surface">Aniversariantes</span>
+        </div>
+
+        <nav class="flex-1 px-4 mt-4 space-y-2">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 text-white font-medium">
+                <span class="material-symbols-outlined text-xl">dashboard</span>
+                <span class="text-label-md">Dashboard</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-white transition-all">
+                <span class="material-symbols-outlined text-xl">calendar_month</span>
+                <span class="text-label-md">Calendar</span>
+            </a>
+            <a href="#email-settings" class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 hover:text-white transition-all">
+                <span class="material-symbols-outlined text-xl">mail</span>
+                <span class="text-label-md">Email Settings</span>
+            </a>
+        </nav>
+
+        <div class="p-4 mt-auto border-t border-white/5">
+            
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile sidebar -->
+    <label for="sidebar-toggle" class="fixed inset-0 bg-black/60 z-40 lg:hidden hidden peer-checked:block transition-opacity cursor-pointer"></label>
+
+    <!-- Main Content Canvas -->
+    <main class="lg:ml-64 pt-20 lg:pt-12 px-margin-mobile lg:px-margin-desktop pb-stack-lg max-w-[1400px] min-h-screen">
+        
+        <!-- Header Section -->
+        <header class="mb-stack-lg flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+                <p id="current-date" class="text-on-surface-variant font-label-md mb-unit uppercase tracking-wider">Carregando data...</p>
+                <h1 class="font-headline-lg text-headline-lg font-bold">Bom dia, <span class="brand-gradient-text">Equipe Hubon</span></h1>
+            </div>
+            <div class="relative w-full md:w-80">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+                <input type="text" placeholder="Buscar colaborador..." class="bg-surface-container-low border border-white/10 rounded-lg pl-10 pr-4 py-2 text-label-md w-full focus:ring-1 focus:ring-primary focus:border-primary transition-all">
+            </div>
+        </header>
+
+        <!-- Bento Grid Layout -->
+        <div class="grid grid-cols-12 gap-gutter">
+            
+            <!-- Hoje (Today) Section -->
+            <section class="col-span-12 xl:col-span-8 flex flex-col gap-stack-md">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-headline-md text-xl lg:text-headline-md flex items-center gap-2">
+                        Hoje
+                        <span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+                    </h2>
+                    <span class="text-on-surface-variant text-label-sm">2 Aniversariantes</span>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
+                    <!-- Birthday Card 1 -->
+                    <div class="glass-panel p-stack-md rounded-xl brand-border flex flex-col gap-stack-md relative overflow-hidden group">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-stack-md">
+                                <div class="h-12 w-12 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-lg text-primary ring-1 ring-white/10">
+                                    AS
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-body-lg">Ana Beatriz Silva</h3>
+                                    <p class="text-on-surface-variant text-label-md">Product Designer</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-stack-sm flex items-center gap-stack-sm">
+                            <button class="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 py-2 px-4 rounded-lg text-label-sm transition-colors flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-sm">content_copy</span>
+                                Copiar Dados
+                            </button>
+                            <button class="brand-btn p-2 rounded-lg text-white hover:opacity-90 transition-opacity">
+                                <span class="material-symbols-outlined text-sm">celebration</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Birthday Card 2 -->
+                    <div class="glass-panel p-stack-md rounded-xl brand-border flex flex-col gap-stack-md relative overflow-hidden group">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-stack-md">
+                                <div class="h-12 w-12 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-lg text-primary ring-1 ring-white/10">
+                                    CE
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-body-lg">Carlos Eduardo</h3>
+                                    <p class="text-on-surface-variant text-label-md">DevOps Engineer</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-stack-sm flex items-center gap-stack-sm">
+                            <button class="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 py-2 px-4 rounded-lg text-label-sm transition-colors flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-sm">content_copy</span>
+                                Copiar Dados
+                            </button>
+                            <button class="brand-btn p-2 rounded-lg text-white hover:opacity-90 transition-opacity">
+                                <span class="material-symbols-outlined text-sm">celebration</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Próximos Dias (Upcoming) Section -->
+            <section class="col-span-12 xl:col-span-4 flex flex-col gap-stack-md">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-headline-md text-xl lg:text-headline-md">Próximos Dias</h2>
+                    <a href="#" class="text-primary text-label-sm hover:underline">Ver todos</a>
+                </div>
+                <div class="glass-panel rounded-xl overflow-hidden">
+                    <div class="flex flex-col divide-y divide-white/5">
+                        <div class="p-4 flex items-center justify-between hover:bg-white/5 transition-colors group cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-full bg-surface-container flex items-center justify-center text-label-md font-bold text-on-surface-variant">
+                                    RA
+                                </div>
+                                <div class="">
+                                    <h4 class="font-bold text-label-md">Ricardo Almeida</h4>
+                                    <p class="text-on-surface-variant text-label-sm">Amanhã, 12 Out</p>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+                        </div>
+                        <div class="p-4 flex items-center justify-between hover:bg-white/5 transition-colors group cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-full bg-surface-container flex items-center justify-center text-label-md font-bold text-on-surface-variant">
+                                    MS
+                                </div>
+                                <div class="">
+                                    <h4 class="font-bold text-label-md">Mariana Souza</h4>
+                                    <p class="text-on-surface-variant text-label-sm">15 Out</p>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+                        </div>
+                        <div class="p-4 flex items-center justify-between hover:bg-white/5 transition-colors group cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-full bg-surface-container flex items-center justify-center text-label-md font-bold text-on-surface-variant">
+                                    JP
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-label-md">João Pedro</h4>
+                                    <p class="text-on-surface-variant text-label-sm">18 Out</p>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mensal Section (Chart) -->
+            <section class="col-span-12 lg:col-span-6 flex flex-col gap-stack-md">
+                <h2 class="font-headline-md text-xl lg:text-headline-md">Frequência Mensal</h2>
+                <div class="glass-panel p-stack-md rounded-xl h-72 flex flex-col justify-between">
+                    <div class="flex items-end justify-between h-44 px-stack-md">
+                        <div class="flex flex-col items-center gap-2 flex-1">
+                            <div class="w-10 md:w-14 bg-white/10 rounded-t-lg transition-all hover:bg-primary/40" style="height: 40%"></div>
+                            <span class="text-label-sm text-on-surface-variant">Sem 1</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 flex-1">
+                            <div class="w-10 md:w-14 bg-primary/60 rounded-t-lg transition-all hover:bg-primary/80" style="height: 80%"></div>
+                            <span class="text-label-sm text-on-surface-variant">Sem 2</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 flex-1">
+                            <div class="w-10 md:w-14 bg-white/10 rounded-t-lg transition-all hover:bg-primary/40" style="height: 30%"></div>
+                            <span class="text-label-sm text-on-surface-variant">Sem 3</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 flex-1">
+                            <div class="w-10 md:w-14 bg-white/10 rounded-t-lg transition-all hover:bg-primary/40" style="height: 60%"></div>
+                            <span class="text-label-sm text-on-surface-variant">Sem 4</span>
+                        </div>
+                    </div>
+                    <div class="pt-stack-sm border-t border-white/5">
+                        <p class="text-label-sm text-on-surface-variant text-center">Total de 14 aniversariantes em Outubro</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Configurações de E-mail Section (Major destination) -->
+            <section id="email-settings" class="col-span-12 lg:col-span-6 flex flex-col gap-stack-md scroll-mt-24">
+                <h2 class="font-headline-md text-xl lg:text-headline-md">Configurações de E-mail</h2>
+                <div class="glass-panel p-stack-md rounded-xl flex flex-col gap-stack-md h-72">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="email" placeholder="nome@empresa.com" class="flex-1 bg-surface-container-low border border-white/10 rounded-lg px-4 py-2 text-label-md focus:ring-1 focus:ring-primary focus:border-primary">
+                        <button class="bg-primary/10 text-primary px-6 py-2 rounded-lg font-bold text-label-md hover:bg-primary/20 transition-colors whitespace-nowrap">
+                            Adicionar
+                        </button>
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col gap-2 overflow-y-auto pr-2 custom-scrollbar">
+                        <div class="flex items-center justify-between bg-white/5 px-4 py-3 rounded-lg group hover:bg-white/10 transition-colors">
+                            <span class="text-label-md">rh@hubon.com.br</span>
+                            <button class="text-error/70 hover:text-error transition-colors">
+                                <span class="material-symbols-outlined text-sm">delete</span>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between bg-white/5 px-4 py-3 rounded-lg group hover:bg-white/10 transition-colors">
+                            <span class="text-label-md">gestao@hubon.com.br</span>
+                            <button class="text-error/70 hover:text-error transition-colors">
+                                <span class="material-symbols-outlined text-sm">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 pt-2">
+                        <div class="relative flex items-center">
+                            <input type="checkbox" id="resumo-semanal" checked="" class="h-5 w-5 rounded border-white/10 bg-surface-container-low text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer">
+                        </div>
+                        <label for="resumo-semanal" class="text-label-sm text-on-surface-variant cursor-pointer select-none">Enviar resumo semanal automaticamente</label>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script class="">
+        // Dynamic Date Display
+        function updateDate() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const formattedDate = now.toLocaleDateString('pt-BR', options);
+            document.getElementById('current-date').textContent = formattedDate;
+        }
+        updateDate();
+
+        // Simple Copy Feedback Interaction
+        document.querySelectorAll('button').forEach(btn => {
+            if (btn.innerText.includes('Copiar Dados')) {
+                btn.addEventListener('click', () => {
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = `<span class="material-symbols-outlined text-sm">check</span> Copiado!`;
+                    btn.classList.add('text-primary', 'bg-primary/5');
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                        btn.classList.remove('text-primary', 'bg-primary/5</script></body></html>

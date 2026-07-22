@@ -23,6 +23,9 @@ Este projeto é um painel e sistema de notificações automatizadas para anivers
    - `CRON_SECRET`, `ADMIN_USER`, `ADMIN_PASS`, senhas de banco, credenciais SMTP, etc.
 3. Consulte as documentações no diretório `docs/` para instruções de deploy (VPS, Hostinger).
 
+## Deploy e BasePath
+- O projeto Next.js no `painel-web/` está configurado para utilizar um `basePath` no ambiente de produção (ex: subdiretório `/aniversariantes`), facilitando o proxy reverso.
+
 ## LGPD e Segurança
 - O arquivo `.env` não é versionado.
 - Nenhuma senha ou token de API deve ser hardcoded no projeto.
