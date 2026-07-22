@@ -1,6 +1,6 @@
 # Pendências do Projeto - Aniversariantes
 
-Após a remoção do escopo de WhatsApp (Evolution API / Módulo 4), o projeto encerra-se no Módulo 3. 
+O projeto encerra-se no Módulo 3. 
 Abaixo está a lista atualizada e definitiva de pendências técnicas para concluir o projeto:
 
 ## 1. Interface de Gestão de E-mails

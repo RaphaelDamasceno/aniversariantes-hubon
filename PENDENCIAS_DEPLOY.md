@@ -1,6 +1,6 @@
 # Pendências de Deploy - MVP Finalizado
 
-Todo o escopo de código do projeto (Fase 1 / Módulo 1 ao 3) está concluído, auditado e enviado para o GitHub. A integração de WhatsApp (Módulo 4) e a Fase 2 foram formalmente canceladas do escopo.
+Todo o escopo de código do projeto (Fase 1 / Módulo 1 ao 3) está concluído, auditado e enviado para o GitHub. A Fase 2 foi formalmente cancelada do escopo.
 
 Para colocar o sistema definitivamente no ar, restam apenas os passos operacionais abaixo na infraestrutura:
 
@@ -9,7 +9,7 @@ Para colocar o sistema definitivamente no ar, restam apenas os passos operaciona
 
 ## 2. Configuração de Domínio e Subdiretório
 - [ ] **DNS:** Criar o Apontamento A no painel da Hostinger para a VPS.
-- [ ] **Next.js:** Fazer a configuração do `basePath: '/aniversariantes'` no projeto Next.js e atualizar os links do front (para que o painel funcione no link `hubon.tech/aniversariantes`).
+- [x] **Next.js:** Fazer a configuração do `basePath: '/aniversariantes'` no projeto Next.js e atualizar os links do front (para que o painel funcione no link `hubon.tech/aniversariantes`).
 - [ ] **Nginx (Proxy Reverso):** Instalar e configurar o Nginx na VPS criando um bloco `location /aniversariantes` que aponte para a porta 3000 do PM2.
 - [ ] **HTTPS:** Rodar o Certbot para aplicar certificado SSL no domínio principal.
 

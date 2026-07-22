@@ -12,7 +12,6 @@ Atualizar sempre que uma nova decisão for tomada ou algo for descartado.
 
 | # | Funcionalidade | Motivo | Data |
 |---|----------------|--------|------|
-| 1 | WhatsApp | Módulo completamente removido do escopo do projeto, todas as notificações serão via e-mail. | 2026-07-22 |
 
 ---
 

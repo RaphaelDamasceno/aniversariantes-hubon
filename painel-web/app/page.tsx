@@ -27,10 +27,10 @@ export default function Home() {
     async function fetchData() {
       try {
         const [resHoje, resSemana, resTodos, resDestinatarios] = await Promise.all([
-          fetch('/api/aniversariantes/hoje'),
-          fetch('/api/aniversariantes/semana'),
-          fetch('/api/aniversariantes/todos'),
-          fetch('/api/destinatarios')
+          fetch('/aniversariantes/api/aniversariantes/hoje'),
+          fetch('/aniversariantes/api/aniversariantes/semana'),
+          fetch('/aniversariantes/api/aniversariantes/todos'),
+          fetch('/aniversariantes/api/destinatarios')
         ]);
         
         if (resHoje.ok && resSemana.ok && resTodos.ok) {
@@ -93,7 +93,7 @@ export default function Home() {
     setEmailLoading(true);
     setEmailFeedback(null);
     try {
-      const res = await fetch('/api/destinatarios', {
+      const res = await fetch('/aniversariantes/api/destinatarios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: novoEmail.trim() }),
@@ -103,7 +103,7 @@ export default function Home() {
         setEmailFeedback({ type: 'ok', msg: 'E-mail adicionado!' });
         setNovoEmail('');
         // Recarrega a lista
-        const res2 = await fetch('/api/destinatarios');
+        const res2 = await fetch('/aniversariantes/api/destinatarios');
         const data2 = await res2.json();
         setDestinatarios(data2.destinatarios ?? []);
       } else {
@@ -118,7 +118,7 @@ export default function Home() {
 
   async function removerEmail(id: number) {
     try {
-      const res = await fetch(`/api/destinatarios?id=${id}`, { method: 'DELETE' });
+      const res = await fetch(`/aniversariantes/api/destinatarios?id=${id}`, { method: 'DELETE' });
       if (res.ok) {
         setDestinatarios(prev => prev.filter(d => d.id !== id));
       }
