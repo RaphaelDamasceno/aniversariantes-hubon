@@ -23,3 +23,7 @@ deploy.zip
 deploy-vps.ps1
 
 response.json
+
+# Pastas sensíveis de infraestrutura e DB
+db-api/
+db-api-slim/
