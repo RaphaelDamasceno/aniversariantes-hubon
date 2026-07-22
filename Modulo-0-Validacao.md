@@ -13,7 +13,6 @@ Fonte analisada: `corpstek_corretores_202607211130.csv` (4.439 registros, 94 col
 | Elegibilidade | Apenas **funcionários** (não corretores) |
 | E-mail semanal — destinatários (fase 1) | `dp@hubnogueira.com.br`, `raphaelferreira@hubnogueira.com.br` |
 | E-mail — gestão dos destinatários | Precisa de **interface na aplicação** para adicionar/remover (não pode ficar hardcoded) |
-| WhatsApp (fase 1) | Todas as mensagens (colaborador, DP, C-level, supervisor) vão para **um único número de teste**: `81997957244` — sem roteamento real por pessoa ainda |
 | Infraestrutura | **Não vai ser local.** Sai do esquema "roda no seu PC" e vai para uma **VPS na Hostinger** |
 
 ---
@@ -47,9 +46,7 @@ Campos relevantes identificados na tabela de origem, para replicar na base inter
 | `cargo_principal` | Exibição no painel / critério de elegibilidade |
 | `administrativo_ativo` | Candidato a critério de "é funcionário" (ver seção 4) |
 | `email` / `email_contato` | Contato, se necessário futuramente |
-| `telefone_1` | WhatsApp individual (fase futura — hoje não é usado, tudo vai pro número fixo) |
 | `id_corret_gerente` | Vínculo com o gestor direto (ver seção 5 — hierarquia) |
-| `socio_ativo`, `diretor_ativo`, `superintendente_ativo` | Candidatos a critério de "C-level" (ver seção 5) |
 | `data_exclusao` | Indica se o colaborador foi desligado (ver alerta na seção 6) |
 
 ---
@@ -72,10 +69,6 @@ Porém, esse mesmo campo também aparece marcado em **2 Superintendentes e 1 Dir
 
 **Porém:** os campos de nome do gestor (`nome_gerente`, `nome_coordenador`, `nome_mentoring`) estão **100% vazios** no CSV, mesmo com os IDs preenchidos. Ou seja: o sync vai precisar **buscar o nome do gestor fazendo join** de `id_corret_gerente` com o `id_corretor` de outro registro — não dá pra confiar nesses campos de texto.
 
-Para C-level, o candidato mais direto são os registros com `socio_ativo = 1` (19 pessoas), que cobrem os cargos: Diretor, Superintendente, Sócio, COO e CPO.
-
-**Pergunta:** esses 19 registros (`socio_ativo = 1`) representam corretamente quem deve receber o aviso de "C-level" no WhatsApp? Ou é uma lista mais restrita (ex: só os C-level de fato, tipo COO/CPO, sem incluir todos os Diretores regionais)?
-
 ---
 
 ## 6. Problemas de qualidade de dados encontrados (recomendo corrigir na origem)
@@ -84,8 +77,6 @@ Para C-level, o candidato mais direto são os registros com `socio_ativo = 1` (1
 |---|---|---|
 | `data_exclusao` com data-sentinela | 889 registros têm `1970-01-01 00:00:01.000` em vez de campo vazio, para indicar "não desligado" | O sync precisa tratar essa data como "ativo", não como um desligamento real em 1970 — mas seria mais limpo esse campo vir `NULL` |
 | `datanascimento` ausente | 57 colaboradores sem data de nascimento | Esses colaboradores nunca vão aparecer no painel de aniversariantes — confirmar se é aceitável ou se dá pra completar |
-| `telefone_1` malformado | 6 registros com números incompletos, ex: `(81) 9`, `(69) 0`, `(11) 9` | Não afeta a fase 1 (WhatsApp vai pro número fixo), mas vai impedir o envio individual quando isso for implementado — vale corrigir na origem |
-| `telefone` / `telefone_1` ausentes | ~43% dos registros sem telefone preenchido | Mesmo ponto acima — sem impacto agora, mas é uma limitação futura |
 | Colunas duplicadas | `administrativo_ativo` e `administrador_ativo` idênticas | Ver seção 4 — confirmar com quem mantém o banco |
 
 ---
@@ -107,5 +98,4 @@ Isso passa a ser um pequeno módulo próprio dentro do painel (Módulo 2), não 
 - [ ] Tipo de VPN e forma de a VPS acessá-la (seção 2)
 - [ ] Critério final de "é funcionário" para o benefício (seção 4)
 - [ ] Se a duplicidade `administrativo_ativo` / `administrador_ativo` é esperada (seção 4)
-- [ ] Lista de C-level = `socio_ativo = 1` está correta? (seção 5)
 - [ ] Aceitável os 57 colaboradores sem data de nascimento ficarem de fora? (seção 6)

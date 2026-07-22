@@ -13,7 +13,7 @@ Marketing e Financeiro precisam saber quem são os aniversariantes da empresa pa
 - **Marketing:** produzir cards de parabéns.
 - **Financeiro/DP:** processar o pagamento de R$ 100,00 referente ao aniversário do colaborador.
 
-Hoje esse processo aparentemente é manual/informal, gerando esquecimentos e atraso. O chamado pede uma solução central para consultar aniversariantes, com bônus de automações (e-mail diário/semanal/mensal e WhatsApp).
+Hoje esse processo aparentemente é manual/informal, gerando esquecimentos e atraso. O chamado pede uma solução central para consultar aniversariantes, com bônus de automação (e-mail diário/semanal/mensal).
 
 ## 2. Problema
 
@@ -32,7 +32,6 @@ Criar uma solução que centralize e distribua a informação de aniversariantes
 |---|---|
 | Marketing | Ver aniversariantes do dia/semana/mês para criar cards |
 | Financeiro / DP | Ser notificado para processar os R$100 do aniversário |
-| C-level e Supervisor do colaborador | Receber aviso do aniversário do liderado (via WhatsApp) |
 | Colaborador (corretor ou administrativo) | Ser lembrado de retirar o valor com o DP |
 | Solicitante do chamado | Painel + relatório consolidado |
 
@@ -48,14 +47,6 @@ Criar uma solução que centralize e distribua a informação de aniversariantes
 - Disparo toda segunda-feira de manhã.
 - Lista os aniversariantes do período solicitado (dia, semana ou mês).
 - Enviado para uma lista de distribuição configurável (Marketing + Financeiro + quem mais for adicionado), dependendo do cron job configurado.
-
-### 5.3 WhatsApp automatizado (via Evolution API e backend interno)
-No dia do aniversário, disparar:
-- Mensagem institucional de parabéns para o colaborador.
-- Mensagem para o **número do DP**, pedindo para liberar os R$100 do colaborador X.
-- Mensagem para o(s) **C-level** e para o **Supervisor direto** do colaborador, avisando do aniversário.
-
-> ⚠️ Este item depende de mapear a **hierarquia** (quem é supervisor de quem, quem são os C-levels) — isso pode não estar disponível no banco de colaboradores atual. Precisa validar (ver seção 9).
 
 ## 6. Fora de escopo (Fase 1)
 
@@ -78,7 +69,7 @@ No dia do aniversário, disparar:
                                      |                                             |
                               [API/Backend]                                [Disparos Internos via Cron]
                                      |                                             |
-                              [Painel Web]                          [E-mails (Dia/Sem/Mês)] [WhatsApp/Evolution]
+                              [Painel Web]                          [E-mails (Dia/Sem/Mês)]
 ```
 
 **Por que um "meio de campo" (base intermediária) e não consultar o DB direto:**
@@ -91,17 +82,14 @@ Esse ponto é o mais crítico tecnicamente e o que mais vai definir prazo — ve
 ## 9. Riscos, dependências e perguntas em aberto
 
 1. **VPN + automação:** quem/o quê vai rodar o sync de dentro da rede com VPN? Precisa de uma máquina/servidor com acesso permanente, ou um job agendado que sobe a VPN, sincroniza e desce.
-2. **Hierarquia:** Este projeto não gerencia ou utiliza o gestor direto/supervisor do colaborador (funcionalidade removida).
-3. **LGPD / dado sensível:** data de nascimento é dado pessoal. Definir quem pode acessar o painel (login obrigatório, sem exposição pública) e não expor isso em canais amplos.
-4. **Número de WhatsApp:** já existe um número de DP e uma lista de C-level/supervisores mapeada para o Evolution API, ou isso precisa ser cadastrado?
-5. **Regra dos R$100:** é sempre R$100 fixo pra todo mundo (corretor e administrativo)? Tem alguma condição (tempo de casa, etc.)?
-6. **Lista de distribuição do e-mail:** quem entra nela hoje, e como isso é mantido (manual ou automático por área)?
+2. **LGPD / dado sensível:** data de nascimento é dado pessoal. Definir quem pode acessar o painel (login obrigatório, sem exposição pública) e não expor isso em canais amplos.
+3. **Regra dos R$100:** é sempre R$100 fixo pra todo mundo (corretor e administrativo)? Tem alguma condição (tempo de casa, etc.)?
+4. **Lista de distribuição do e-mail:** quem entra nela hoje, e como isso é mantido (manual ou automático por área)?
 
 ## 10. Critérios de aceite (MVP)
 
 - [ ] Painel mostra corretamente aniversariantes do dia, da semana e do mês, batendo com o banco de colaboradores.
 - [ ] E-mail de aniversariantes pode ser disparado por período (diário, semanal, mensal), sem falha, para a lista configurada.
-- [ ] Mensagem de WhatsApp para o colaborador, DP, C-level e supervisor é disparada no dia certo, para o número certo.
 - [ ] Acesso ao painel exige autenticação.
 - [ ] Sync com o banco de colaboradores roda sem exigir intervenção manual diária.
 
@@ -109,9 +97,8 @@ Esse ponto é o mais crítico tecnicamente e o que mais vai definir prazo — ve
 
 | Fase | Entrega |
 |---|---|
-| 0 | Validar perguntas da seção 9 (principalmente hierarquia e infra da VPN) |
+| 0 | Validar perguntas da seção 9 (principalmente infra da VPN) |
 | 1 | Job de sync do DB → base intermediária |
 | 2 | Painel web (leitura) |
 | 3 | E-mail de Aniversariantes via backend interno (Next.js) + Cron Job |
-| 4 | WhatsApp via backend interno + Evolution API |
 

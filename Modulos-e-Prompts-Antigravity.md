@@ -27,12 +27,9 @@ Referência de negócio completa: docs/PRD.md
 **Objetivo:** eliminar as incertezas do PRD antes de qualquer linha de código.
 
 **Critérios de aceitação:**
-- [x] Confirmado se o banco de colaboradores não utilizará campo de gestor direto neste escopo.
-- [x] Confirmado como identificar C-level (campo no banco, planilha à parte, ou lista fixa).
 - [x] Confirmado valor e regra do benefício (sempre R$100? alguma exceção?).
 - [x] Definida a lista de distribuição inicial do e-mail.
 - [x] Definido quem/onde vai rodar o job de sync (máquina com acesso à VPN).
-- [x] Números de WhatsApp do DP e política de C-level/supervisor levantados.
 
 > Este módulo não usa o Antigravity — é levantamento com o time/solicitante.
 
@@ -127,21 +124,7 @@ ou deixe o agente sugerir].
 
 > O disparo de e-mails deve ser implementado no backend (ex: rota de API + nodemailer) acionado por um cron job externo ou interno. A lista de e-mails pode ser gerenciada por variáveis de ambiente.
 
----
 
-## Módulo 4 — WhatsApp via Evolution API (Backend Interno)
-
-**Objetivo:** no dia do aniversário, notificar automaticamente colaborador, DP, C-level e supervisor direto.
-
-**Critérios de aceitação:**
-- [ ] O script de disparo identifica corretamente os aniversariantes do dia.
-- [ ] Mensagem de parabéns é enviada ao colaborador.
-- [ ] Mensagem é enviada ao número do DP, citando nome do colaborador e valor do benefício.
-- [ ] Mensagem é enviada ao(s) C-level(s).
-- [ ] O disparo não quebra em casos de erro — apenas loga o caso.
-- [ ] Números de telefone e templates de mensagem são configuráveis, não hardcoded.
-
-> O disparo deve ser orquestrado diretamente no backend, conectando-se aos endpoints da Evolution API de forma nativa na aplicação.
 
 ---
 
@@ -150,4 +133,4 @@ ou deixe o agente sugerir].
 1. Módulo 0 (validação — sem Antigravity)
 2. Módulo 1 (sync)
 3. Módulo 2 (API + painel)
-4. Módulo 3 e 4 podem rodar em paralelo depois que o Módulo 2 estiver de pé, já que ambos dependem dos endpoints de aniversariantes.
+4. Módulo 3 pode rodar depois que o Módulo 2 estiver de pé, já que depende dos endpoints de aniversariantes.
