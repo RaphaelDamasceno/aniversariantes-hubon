@@ -1,12 +1,18 @@
+"use client";
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import styles from './Sidebar.module.css';
 
 const navItems = [
-  { icon: 'dashboard', label: 'Dashboard', href: '/aniversariantes', active: true },
-  { icon: 'calendar_month', label: 'Calendário', href: '#', active: false },
-  { icon: 'mail', label: 'E-mail', href: '#email-settings', active: false },
+  { icon: 'dashboard', label: 'Dashboard', href: '/' },
+  { icon: 'calendar_month', label: 'Calendário', href: '/calendario' },
+  { icon: 'mail', label: 'E-mail', href: '/#email-settings' },
 ];
 
 export default function Sidebar() {
+  const pathname = usePathname();
+
   return (
     <>
       {/* Checkbox toggle (pure CSS mobile drawer) */}
@@ -25,19 +31,24 @@ export default function Sidebar() {
 
         {/* Nav */}
         <nav className={styles.nav} aria-label="Navegação principal">
-          {navItems.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className={`${styles.navItem} ${item.active ? styles.navItemActive : ''}`}
-              aria-current={item.active ? 'page' : undefined}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">
-                {item.icon}
-              </span>
-              <span className={styles.navLabel}>{item.label}</span>
-            </a>
-          ))}
+          {navItems.map((item) => {
+            // Check if current item is active
+            const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+            
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">
+                  {item.icon}
+                </span>
+                <span className={styles.navLabel}>{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Footer */}

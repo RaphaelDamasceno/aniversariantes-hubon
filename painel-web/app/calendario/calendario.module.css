@@ -1,0 +1,203 @@
+/* =============================================================
+   Calendário — Layout Mensal
+   ============================================================= */
+
+.canvas {
+  margin-left: 0;
+  padding: 80px var(--space-4) var(--space-12);
+  min-height: 100vh;
+  max-width: 1440px;
+}
+
+@media (min-width: 1024px) {
+  .canvas {
+    margin-left: 256px;
+    padding: var(--space-12) var(--space-10) var(--space-12);
+  }
+}
+
+.pageHeader {
+  margin-bottom: var(--space-8);
+}
+
+.dateLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-1);
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--color-on-surface);
+}
+
+/* ── Layout (Nav + Content) ── */
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+/* ── Month Nav ── */
+.monthNav {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  /* Hide scrollbar for nav */
+  scrollbar-width: none;
+}
+.monthNav::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .monthNav {
+    flex-direction: column;
+    width: 200px;
+    flex-shrink: 0;
+    overflow-x: visible;
+  }
+}
+
+.monthBtn {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  color: var(--color-on-surface-variant);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  transition: background 0.18s ease, color 0.18s ease;
+  white-space: nowrap;
+}
+
+.monthBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-on-surface);
+}
+
+.monthBtnActive {
+  background: rgba(192, 193, 255, 0.12);
+  color: var(--color-primary);
+}
+
+.monthBtnActive:hover {
+  background: rgba(192, 193, 255, 0.16);
+  color: var(--color-primary);
+}
+
+/* ── Content Area ── */
+.contentArea {
+  flex: 1;
+}
+
+.listGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+@media (min-width: 600px) {
+  .listGrid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+/* ── Person Card ── */
+.personCard {
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.personCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.cardInfo {
+  min-width: 0;
+}
+
+.cardName {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardRole {
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardDate {
+  flex-shrink: 0;
+  margin-left: var(--space-3);
+}
+
+.dateBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(192, 193, 255, 0.10);
+  border: 1px solid rgba(192, 193, 255, 0.20);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-3);
+  min-width: 56px;
+}
+
+.dateDay {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1.1;
+}
+
+.dateMonth {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-4);
+  text-align: center;
+}

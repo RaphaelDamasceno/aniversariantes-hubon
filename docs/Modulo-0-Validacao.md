@@ -88,8 +88,8 @@ Isso passa a ser um pequeno módulo próprio dentro do painel (Módulo 2), não 
 **Critérios de aceitação:**
 - [ ] Tela dentro do painel para listar, adicionar e remover e-mails da lista de distribuição do resumo semanal.
 - [ ] Lista inicial já vem populada com `dp@hubnogueira.com.br` e `raphaelferreira@hubnogueira.com.br`.
-- [ ] O workflow de e-mail semanal (n8n) consulta essa lista via API em vez de ter os e-mails fixos no workflow.
-- [ ] Alteração na lista reflete no próximo disparo, sem precisar mexer no n8n.
+- [ ] O workflow de e-mail semanal consulta essa lista no banco de dados.
+- [ ] Alteração na lista reflete no próximo disparo, sem precisar de configuração externa.
 
 ---
 

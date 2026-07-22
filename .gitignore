@@ -21,3 +21,5 @@ dist/
 database.sqlite
 deploy.zip
 deploy-vps.ps1
+
+response.json

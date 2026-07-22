@@ -10,6 +10,15 @@ export async function GET(
 ) {
   const { periodo } = await params;
 
+  // Validate CRON_SECRET to prevent unauthorized access
+  const authHeader = request.headers.get('authorization');
+  if (
+    process.env.CRON_SECRET && 
+    authHeader !== `Bearer ${process.env.CRON_SECRET}`
+  ) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   if (!['dia', 'semana', 'mes'].includes(periodo)) {
     return NextResponse.json({ error: 'Período inválido. Use dia, semana ou mes.' }, { status: 400 });
   }

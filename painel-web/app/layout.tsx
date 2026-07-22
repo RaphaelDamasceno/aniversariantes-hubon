@@ -30,6 +30,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=block" rel="stylesheet" />
+      </head>
       <body className={`${outfit.variable} ${inter.variable}`}>
         <Sidebar />
         <MobileHeader />
