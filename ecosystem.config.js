@@ -20,6 +20,27 @@ module.exports = {
       env: {
         NODE_ENV: "production"
       }
+    },
+    {
+      name: "cron-email-dia",
+      script: "node trigger-cron.js dia",
+      cron_restart: "0 8 * * *", // Todo dia às 08:00
+      autorestart: false,
+      watch: false
+    },
+    {
+      name: "cron-email-semana",
+      script: "node trigger-cron.js semana",
+      cron_restart: "0 8 * * 1", // Toda segunda-feira às 08:00
+      autorestart: false,
+      watch: false
+    },
+    {
+      name: "cron-email-mes",
+      script: "node trigger-cron.js mes",
+      cron_restart: "0 8 1 * *", // Todo dia 1 do mês às 08:00
+      autorestart: false,
+      watch: false
     }
   ]
 };

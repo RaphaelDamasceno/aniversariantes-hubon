@@ -30,7 +30,7 @@ Referência de negócio completa: docs/PRD.md
 - [x] Confirmado se o banco de colaboradores não utilizará campo de gestor direto neste escopo.
 - [x] Confirmado como identificar C-level (campo no banco, planilha à parte, ou lista fixa).
 - [x] Confirmado valor e regra do benefício (sempre R$100? alguma exceção?).
-- [x] Definida a lista de distribuição inicial do e-mail semanal.
+- [x] Definida a lista de distribuição inicial do e-mail.
 - [x] Definido quem/onde vai rodar o job de sync (máquina com acesso à VPN).
 - [x] Números de WhatsApp do DP e política de C-level/supervisor levantados.
 
@@ -75,7 +75,7 @@ Não implemente autenticação nem interface aqui — só o job de sync.
 
 ## Módulo 2 — API + Painel Web
 
-**Objetivo:** expor os dados da base intermediária via API e um painel web de leitura, mostrando aniversariantes do dia e da semana.
+**Objetivo:** expor os dados da base intermediária via API e um painel web de leitura, mostrando aniversariantes do dia, da semana e uma listagem geral (mês/todos).
 
 **Critérios de aceitação:**
 - [x] Endpoint retorna aniversariantes do dia atual.
@@ -95,6 +95,7 @@ nome, data_nascimento, area). Crie:
 1. Uma API REST com dois endpoints:
    - GET /aniversariantes/hoje
    - GET /aniversariantes/semana
+   - GET /aniversariantes/todos (para fins de QA e exibição geral)
    Ambos devem considerar apenas dia e mês do aniversário (idade não importa).
 
 2. Um painel web simples (read-only) que consome essa API e mostra:
@@ -113,34 +114,34 @@ ou deixe o agente sugerir].
 
 ---
 
-## Módulo 3 — E-mail semanal (n8n)
+## Módulo 3 — E-mail de Aniversariantes (Backend Interno + Cron)
 
-**Objetivo:** disparar toda segunda-feira um e-mail com os aniversariantes da semana para a lista de distribuição.
+**Objetivo:** disparar e-mails com os aniversariantes (diário, semanal ou mensal) para a lista de distribuição.
 
 **Critérios de aceitação:**
-- [ ] Workflow n8n dispara automaticamente toda segunda-feira, em horário definido.
-- [ ] Corpo do e-mail lista nome + data de cada aniversariante da semana.
+- [ ] Gatilho via Cron/Agendador bate na rota da API (passando o período desejado) automaticamente.
+- [ ] Corpo do e-mail lista nome + data de cada aniversariante correspondente ao período solicitado.
 - [ ] Lista de destinatários é configurável (não hardcoded direto no workflow).
-- [ ] Se não houver aniversariantes na semana, o e-mail avisa isso (não falha silenciosamente).
+- [ ] Se não houver aniversariantes no período, o e-mail avisa isso (não falha silenciosamente).
 - [ ] Workflow trata erro de falha no envio (ex: retry ou notificação de falha).
 
-> Esse módulo tende a ser mais rápido montar direto na interface do n8n do que pedir pro Antigravity gerar código. Use o Antigravity só se precisar de alguma lógica custom (ex: formatação do e-mail) que o n8n não resolve nativamente.
+> O disparo de e-mails deve ser implementado no backend (ex: rota de API + nodemailer) acionado por um cron job externo ou interno. A lista de e-mails pode ser gerenciada por variáveis de ambiente.
 
 ---
 
-## Módulo 4 — WhatsApp via n8n + Evolution API
+## Módulo 4 — WhatsApp via Evolution API (Backend Interno)
 
 **Objetivo:** no dia do aniversário, notificar automaticamente colaborador, DP, C-level e supervisor direto.
 
 **Critérios de aceitação:**
-- [ ] Workflow identifica corretamente os aniversariantes do dia (consumindo o endpoint `/aniversariantes/hoje` do Módulo 2).
+- [ ] O script de disparo identifica corretamente os aniversariantes do dia.
 - [ ] Mensagem de parabéns é enviada ao colaborador.
 - [ ] Mensagem é enviada ao número do DP, citando nome do colaborador e valor do benefício.
 - [ ] Mensagem é enviada ao(s) C-level(s).
-- [ ] O workflow não quebra em casos de erro — apenas loga o caso.
+- [ ] O disparo não quebra em casos de erro — apenas loga o caso.
 - [ ] Números de telefone e templates de mensagem são configuráveis, não hardcoded.
 
-> Também tende a ser mais rápido montar direto no n8n. Peça ajuda ao Antigravity só se precisar de um endpoint auxiliar (ex: `/aniversariantes/hoje/detalhado`) para o n8n consumir.
+> O disparo deve ser orquestrado diretamente no backend, conectando-se aos endpoints da Evolution API de forma nativa na aplicação.
 
 ---
 
@@ -149,4 +150,4 @@ ou deixe o agente sugerir].
 1. Módulo 0 (validação — sem Antigravity)
 2. Módulo 1 (sync)
 3. Módulo 2 (API + painel)
-4. Módulo 3 e 4 podem rodar em paralelo depois que o Módulo 2 estiver de pé, já que ambos dependem do endpoint de aniversariantes do dia/semana.
+4. Módulo 3 e 4 podem rodar em paralelo depois que o Módulo 2 estiver de pé, já que ambos dependem dos endpoints de aniversariantes.

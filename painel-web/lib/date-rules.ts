@@ -49,10 +49,10 @@ export function isBirthdayThisWeek(birthdayISO: string, today: Date = new Date()
   const weekStart = startOfWeek(today, { weekStartsOn: 0 }); // Domingo
   const weekEnd = endOfWeek(today, { weekStartsOn: 0 }); // Sábado
   
-  let normalizedBirthday = normalizeBirthdayToCurrentYear(birthdayISO, currentYear);
+  const normalizedBirthday = normalizeBirthdayToCurrentYear(birthdayISO, currentYear);
   
   // Verifica se o aniversário está na semana do ano atual
-  let isThisWeek = isWithinInterval(normalizedBirthday, { start: weekStart, end: weekEnd });
+  const isThisWeek = isWithinInterval(normalizedBirthday, { start: weekStart, end: weekEnd });
   
   // Casos de borda: Virada de Ano!
   // Se a semana contém dias de DOIS ANOS diferentes (ex: semana começa em 29/Dez/2025 e termina em 04/Jan/2026)
@@ -70,4 +70,13 @@ export function isBirthdayThisWeek(birthdayISO: string, today: Date = new Date()
   }
 
   return isThisWeek;
+}
+
+/**
+ * Verifica se a data de nascimento informada cai no mês atual.
+ */
+export function isBirthdayThisMonth(birthdayISO: string, today: Date = new Date()): boolean {
+  if (!birthdayISO) return false;
+  const birthDate = parseISO(birthdayISO);
+  return birthDate.getMonth() === today.getMonth();
 }

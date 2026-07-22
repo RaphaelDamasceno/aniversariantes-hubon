@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const db = require('better-sqlite3')('../sync-job/database.sqlite');
 db.exec(`
   INSERT INTO colaboradores (id, nome, data_nascimento, cargo_principal, is_clevel) VALUES 

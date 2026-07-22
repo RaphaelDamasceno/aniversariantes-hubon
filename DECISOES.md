@@ -39,6 +39,7 @@ Atualizar sempre que uma nova decisão for tomada ou algo for descartado.
 | 2 | Critério de "ativo" no banco | Funcionário ativo = `data_exclusao IS NULL OR data_exclusao = '1970-01-01 00:00:01'`. A sentinela `1970-01-01` significa "não desligado" no sistema de origem. | 2026-07-21 |
 | 3 | Hierarquia via join | O campo `nome_gerente` está 100% vazio no banco. Qualquer consulta de gestor deve fazer JOIN de `id_corret_gerente` com `id_corretor` da mesma tabela. | 2026-07-21 |
 | 4 | Credenciais | Nunca hardcoded. Sempre via variáveis de ambiente (`.env`). Um `.env.example` com os nomes das variáveis (sem valores) deve acompanhar o código. | 2026-07-21 |
+| 5 | Envio de e-mails (SMTP) | Será utilizado um e-mail pessoal provisoriamente para o envio dos alertas do Módulo 3, visto que a configuração de DNS corporativo é demorada e o objetivo é não bloquear a entrega do projeto. | 2026-07-21 |
 
 ---
 

@@ -1,4 +1,4 @@
-import { isBirthdayToday, isBirthdayThisWeek } from './date-rules';
+import { isBirthdayToday, isBirthdayThisWeek, isBirthdayThisMonth } from './date-rules';
 
 describe('Date Rules', () => {
   describe('isBirthdayToday', () => {
@@ -61,6 +61,22 @@ describe('Date Rules', () => {
       // A pessoa nasceu em 29/02/1996. Em 2026 (não bissexto), consideramos 28/02.
       // E 28/02/2026 é um Sábado, logo está na MESMA semana.
       expect(isBirthdayThisWeek('1996-02-29', baseDate)).toBe(true);
+    });
+  });
+
+  describe('isBirthdayThisMonth', () => {
+    it('deve retornar verdadeiro se o aniversário for no mês atual', () => {
+      const today = new Date(2026, 6, 15); // 15 de Julho de 2026
+      
+      expect(isBirthdayThisMonth('1990-07-01', today)).toBe(true);
+      expect(isBirthdayThisMonth('1985-07-31', today)).toBe(true);
+    });
+
+    it('deve retornar falso se o aniversário for em outro mês', () => {
+      const today = new Date(2026, 6, 15); // Julho
+      
+      expect(isBirthdayThisMonth('1990-06-30', today)).toBe(false);
+      expect(isBirthdayThisMonth('1990-08-01', today)).toBe(false);
     });
   });
 });

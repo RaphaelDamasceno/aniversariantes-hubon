@@ -13,7 +13,7 @@ Marketing e Financeiro precisam saber quem são os aniversariantes da empresa pa
 - **Marketing:** produzir cards de parabéns.
 - **Financeiro/DP:** processar o pagamento de R$ 100,00 referente ao aniversário do colaborador.
 
-Hoje esse processo aparentemente é manual/informal, gerando esquecimentos e atraso. O chamado pede uma solução central para consultar aniversariantes, com bônus de automações (e-mail semanal e WhatsApp).
+Hoje esse processo aparentemente é manual/informal, gerando esquecimentos e atraso. O chamado pede uma solução central para consultar aniversariantes, com bônus de automações (e-mail diário/semanal/mensal e WhatsApp).
 
 ## 2. Problema
 
@@ -44,12 +44,12 @@ Criar uma solução que centralize e distribua a informação de aniversariantes
 - Atualização automática a partir do banco de colaboradores (sync periódico, não precisa ser "real time" no sentido literal — ver seção 8).
 - Acesso via login interno (não pode ser público, ver seção 9 — LGPD).
 
-### 5.2 E-mail semanal
+### 5.2 E-mail de Aniversariantes (Diário, Semanal ou Mensal)
 - Disparo toda segunda-feira de manhã.
-- Lista os aniversariantes da semana.
-- Enviado para uma lista de distribuição configurável (Marketing + Financeiro + quem mais for adicionado).
+- Lista os aniversariantes do período solicitado (dia, semana ou mês).
+- Enviado para uma lista de distribuição configurável (Marketing + Financeiro + quem mais for adicionado), dependendo do cron job configurado.
 
-### 5.3 WhatsApp automatizado (via n8n + Evolution API)
+### 5.3 WhatsApp automatizado (via Evolution API e backend interno)
 No dia do aniversário, disparar:
 - Mensagem institucional de parabéns para o colaborador.
 - Mensagem para o **número do DP**, pedindo para liberar os R$100 do colaborador X.
@@ -76,15 +76,15 @@ No dia do aniversário, disparar:
                                                             |
                                      +----------------------+----------------------+
                                      |                                             |
-                              [API/Backend]                                [n8n workflows]
+                              [API/Backend]                                [Disparos Internos via Cron]
                                      |                                             |
-                              [Painel Web]                          [E-mail semanal] [WhatsApp/Evolution]
+                              [Painel Web]                          [E-mails (Dia/Sem/Mês)] [WhatsApp/Evolution]
 ```
 
 **Por que um "meio de campo" (base intermediária) e não consultar o DB direto:**
-- O DB só é acessível via VPN — a aplicação web e o n8n provavelmente não vão rodar dentro dessa rede o tempo todo.
+- O DB só é acessível via VPN — a aplicação web provavelmente não vai rodar dentro dessa rede o tempo todo.
 - Um job de sincronização (rodando numa máquina/servidor que tem acesso à VPN) replica periodicamente só os campos necessários (nome, data nascimento, área) para uma base separada, mais leve e sem dados sensíveis demais.
-- Isso também evita expor a base de RH inteira para o painel e pro n8n — só replica o mínimo necessário.
+- Isso também evita expor a base de RH inteira para o painel externo — só replica o mínimo necessário.
 
 Esse ponto é o mais crítico tecnicamente e o que mais vai definir prazo — ver seção 9.
 
@@ -95,12 +95,12 @@ Esse ponto é o mais crítico tecnicamente e o que mais vai definir prazo — ve
 3. **LGPD / dado sensível:** data de nascimento é dado pessoal. Definir quem pode acessar o painel (login obrigatório, sem exposição pública) e não expor isso em canais amplos.
 4. **Número de WhatsApp:** já existe um número de DP e uma lista de C-level/supervisores mapeada para o Evolution API, ou isso precisa ser cadastrado?
 5. **Regra dos R$100:** é sempre R$100 fixo pra todo mundo (corretor e administrativo)? Tem alguma condição (tempo de casa, etc.)?
-6. **Lista de distribuição do e-mail semanal:** quem entra nela hoje, e como isso é mantido (manual ou automático por área)?
+6. **Lista de distribuição do e-mail:** quem entra nela hoje, e como isso é mantido (manual ou automático por área)?
 
 ## 10. Critérios de aceite (MVP)
 
 - [ ] Painel mostra corretamente aniversariantes do dia, da semana e do mês, batendo com o banco de colaboradores.
-- [ ] E-mail semanal é disparado toda segunda-feira, sem falha, para a lista configurada.
+- [ ] E-mail de aniversariantes pode ser disparado por período (diário, semanal, mensal), sem falha, para a lista configurada.
 - [ ] Mensagem de WhatsApp para o colaborador, DP, C-level e supervisor é disparada no dia certo, para o número certo.
 - [ ] Acesso ao painel exige autenticação.
 - [ ] Sync com o banco de colaboradores roda sem exigir intervenção manual diária.
@@ -112,6 +112,6 @@ Esse ponto é o mais crítico tecnicamente e o que mais vai definir prazo — ve
 | 0 | Validar perguntas da seção 9 (principalmente hierarquia e infra da VPN) |
 | 1 | Job de sync do DB → base intermediária |
 | 2 | Painel web (leitura) |
-| 3 | E-mail semanal via n8n |
-| 4 | WhatsApp via n8n + Evolution API |
+| 3 | E-mail de Aniversariantes via backend interno (Next.js) + Cron Job |
+| 4 | WhatsApp via backend interno + Evolution API |
 
