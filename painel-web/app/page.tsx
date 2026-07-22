@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { Gift, Calendar, UserRound, Briefcase, Table as TableIcon, Mail, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
 import { Colaborador } from '@/lib/db';
+import styles from './dashboard.module.css';
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Destinatario {
   id: number;
@@ -10,102 +12,168 @@ interface Destinatario {
   criado_em: string;
 }
 
-export default function Home() {
-  const [hoje, setHoje] = useState<Colaborador[]>([]);
-  const [semana, setSemana] = useState<Colaborador[]>([]);
-  const [todos, setTodos] = useState<Colaborador[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
+interface WeekBucket {
+  label: string;
+  count: number;
+}
 
-  // Estado da seção de destinatários
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function getInitials(nome: string): string {
+  const parts = nome.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function formatDayMonth(dateString: string): string {
+  if (!dateString) return '';
+  const [, month, day] = dateString.split('-');
+  return `${day}/${month}`;
+}
+
+function formatDayMonthLong(dateString: string): string {
+  if (!dateString) return '';
+  const [, month, day] = dateString.split('-');
+  const monthNames = [
+    '', 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
+  ];
+  return `${parseInt(day)} ${monthNames[parseInt(month)]}`;
+}
+
+/** Returns which week of the month (1-4) a day belongs to */
+function weekOfMonth(day: number): number {
+  return Math.ceil(day / 7);
+}
+
+/** Builds 4 weekly buckets for a list of colaboradores in the current month */
+function buildWeekBuckets(monthly: Colaborador[]): WeekBucket[] {
+  const buckets: WeekBucket[] = [
+    { label: 'Sem 1', count: 0 },
+    { label: 'Sem 2', count: 0 },
+    { label: 'Sem 3', count: 0 },
+    { label: 'Sem 4', count: 0 },
+  ];
+  for (const c of monthly) {
+    if (!c.data_nascimento) continue;
+    const [, , dayStr] = c.data_nascimento.split('-');
+    const day = parseInt(dayStr, 10);
+    const week = Math.min(weekOfMonth(day), 4) - 1;
+    buckets[week].count++;
+  }
+  return buckets;
+}
+
+function formatCurrentDate(): string {
+  return new Date().toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+function greetingByHour(): string {
+  const h = new Date().getHours();
+  if (h < 12) return 'Bom dia';
+  if (h < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
+// ─── Page Component ──────────────────────────────────────────────────────────
+
+export default function DashboardPage() {
+  const [hoje, setHoje] = useState<Colaborador[]>([]);
+  const [upcoming, setUpcoming] = useState<Colaborador[]>([]);
+  const [mesAtual, setMesAtual] = useState<Colaborador[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // E-mail settings state
   const [destinatarios, setDestinatarios] = useState<Destinatario[]>([]);
   const [novoEmail, setNovoEmail] = useState('');
   const [emailFeedback, setEmailFeedback] = useState<{ type: 'ok' | 'erro'; msg: string } | null>(null);
   const [emailLoading, setEmailLoading] = useState(false);
+  const [resumoSemanal, setResumoSemanal] = useState(true);
+
+  const loadDestinatarios = useCallback(async () => {
+    const res = await fetch('/aniversariantes/api/destinatarios');
+    if (res.ok) {
+      const data = await res.json();
+      setDestinatarios(data.destinatarios ?? []);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchAll() {
       try {
         const [resHoje, resSemana, resTodos, resDestinatarios] = await Promise.all([
           fetch('/aniversariantes/api/aniversariantes/hoje'),
           fetch('/aniversariantes/api/aniversariantes/semana'),
           fetch('/aniversariantes/api/aniversariantes/todos'),
-          fetch('/aniversariantes/api/destinatarios')
+          fetch('/aniversariantes/api/destinatarios'),
         ]);
-        
-        if (resHoje.ok && resSemana.ok && resTodos.ok) {
-          const dataHoje = await resHoje.json();
-          const dataSemana = await resSemana.json();
-          const dataTodos = await resTodos.json();
-          setHoje(dataHoje);
-          
-          // Remove quem faz aniversário hoje da lista da semana, para não duplicar visualmente
-          const hojeIds = new Set(dataHoje.map((c: Colaborador) => c.id));
-          setSemana(dataSemana.filter((c: Colaborador) => !hojeIds.has(c.id)));
-          setTodos(dataTodos);
-        }
+
+        const dataHoje: Colaborador[] = resHoje.ok ? await resHoje.json() : [];
+        const dataSemana: Colaborador[] = resSemana.ok ? await resSemana.json() : [];
+        const dataTodos: Colaborador[] = resTodos.ok ? await resTodos.json() : [];
+
+        setHoje(dataHoje);
+
+        // "Próximos Dias" = esta semana excluindo hoje, limitado a 5
+        const hojeIds = new Set(dataHoje.map((c) => c.id));
+        setUpcoming(dataSemana.filter((c) => !hojeIds.has(c.id)).slice(0, 5));
+
+        // Mês atual
+        const currentMonth = new Date().getMonth() + 1;
+        const doMes = dataTodos
+          .filter((c) => {
+            if (!c.data_nascimento) return false;
+            const [, m] = c.data_nascimento.split('-');
+            return parseInt(m, 10) === currentMonth;
+          })
+          .sort((a, b) => {
+            const [, , da] = a.data_nascimento.split('-');
+            const [, , db] = b.data_nascimento.split('-');
+            return parseInt(da, 10) - parseInt(db, 10);
+          });
+        setMesAtual(doMes);
+
         if (resDestinatarios.ok) {
-          const dataDestinatarios = await resDestinatarios.json();
-          setDestinatarios(dataDestinatarios.destinatarios ?? []);
+          const data = await resDestinatarios.json();
+          setDestinatarios(data.destinatarios ?? []);
         }
-      } catch (error) {
-        console.error('Failed to fetch:', error);
+      } catch (err) {
+        console.error('fetchAll error:', err);
       } finally {
         setLoading(false);
       }
     }
-    fetchData();
+    fetchAll();
   }, []);
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '';
-    const [, month, day] = dateString.split('-');
-    return `${day}/${month}`;
-  };
+  const weekBuckets = buildWeekBuckets(mesAtual);
+  const maxBucketCount = Math.max(...weekBuckets.map((b) => b.count), 1);
 
-  const getMonthNumber = (dateString: string) => {
-    if (!dateString) return -1;
-    const [, month] = dateString.split('-');
-    return parseInt(month, 10);
-  };
+  const currentMonthName = new Date().toLocaleDateString('pt-BR', { month: 'long' });
 
-  const getDayNumber = (dateString: string) => {
-    if (!dateString) return -1;
-    const [, , day] = dateString.split('-');
-    return parseInt(day, 10);
-  };
-
-  const aniversariantesDoMes = todos
-    .filter(c => getMonthNumber(c.data_nascimento) === selectedMonth)
-    .sort((a, b) => getDayNumber(a.data_nascimento) - getDayNumber(b.data_nascimento));
-
-  const meses = [
-    { value: 1, label: 'Janeiro' }, { value: 2, label: 'Fevereiro' },
-    { value: 3, label: 'Março' }, { value: 4, label: 'Abril' },
-    { value: 5, label: 'Maio' }, { value: 6, label: 'Junho' },
-    { value: 7, label: 'Julho' }, { value: 8, label: 'Agosto' },
-    { value: 9, label: 'Setembro' }, { value: 10, label: 'Outubro' },
-    { value: 11, label: 'Novembro' }, { value: 12, label: 'Dezembro' }
-  ];
+  // ── E-mail handlers ────────────────────────────────────────────────────────
 
   async function adicionarEmail() {
-    if (!novoEmail.trim()) return;
+    const email = novoEmail.trim();
+    if (!email) return;
     setEmailLoading(true);
     setEmailFeedback(null);
     try {
       const res = await fetch('/aniversariantes/api/destinatarios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: novoEmail.trim() }),
+        body: JSON.stringify({ email }),
       });
       const data = await res.json();
       if (res.ok) {
-        setEmailFeedback({ type: 'ok', msg: 'E-mail adicionado!' });
+        setEmailFeedback({ type: 'ok', msg: 'E-mail adicionado com sucesso!' });
         setNovoEmail('');
-        // Recarrega a lista
-        const res2 = await fetch('/aniversariantes/api/destinatarios');
-        const data2 = await res2.json();
-        setDestinatarios(data2.destinatarios ?? []);
+        await loadDestinatarios();
       } else {
         setEmailFeedback({ type: 'erro', msg: data.error || 'Erro ao adicionar.' });
       }
@@ -119,225 +187,256 @@ export default function Home() {
   async function removerEmail(id: number) {
     try {
       const res = await fetch(`/aniversariantes/api/destinatarios?id=${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setDestinatarios(prev => prev.filter(d => d.id !== id));
-      }
+      if (res.ok) setDestinatarios((prev) => prev.filter((d) => d.id !== id));
     } catch {
-      // silencia erro de UI
+      // silently fail
     }
   }
 
+  // ── Render ─────────────────────────────────────────────────────────────────
+
   return (
-    <main className="container animate-fade-in pb-12">
-      <header className="text-center mb-8 mt-8">
-        <h1 className="text-4xl font-bold mb-2">
-          Painel de <span className="text-gradient">Aniversariantes</span>
-        </h1>
-        <p className="text-muted">Celebre os momentos especiais da nossa equipe</p>
+    <main className={styles.canvas}>
+      {/* ── Page Header ──────────────────────────────────────────────── */}
+      <header className={styles.pageHeader}>
+        <div>
+          <p className={styles.dateLabel}>{formatCurrentDate()}</p>
+          <h1 className={styles.greeting}>
+            {greetingByHour()},{' '}
+            <span className="brand-gradient-text">Equipe Hubon</span>
+          </h1>
+        </div>
+        <div className={styles.searchWrap}>
+          <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--color-on-surface-variant)', position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} aria-hidden="true">
+            search
+          </span>
+          <input
+            id="busca-colaborador"
+            type="text"
+            placeholder="Buscar colaborador..."
+            className={`field-input ${styles.searchInput}`}
+            style={{ paddingLeft: '40px' }}
+          />
+        </div>
       </header>
 
       {loading ? (
-        <div className="spinner"></div>
+        <div className="spinner" role="status" aria-label="Carregando..." />
       ) : (
-        <>
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            {/* Coluna Hoje */}
-            <section className="glass-panel p-6">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 bg-badge-success rounded-full flex items-center justify-center">
-                  <Gift size={24} />
-                </div>
-                <h2 className="text-2xl">Aniversariantes de Hoje</h2>
-              </div>
+        <div className={`${styles.bentoGrid} animate-fade-in`}>
 
-              {hoje.length === 0 ? (
-                <div className="text-center text-muted p-6 border border-dashed rounded-xl" style={{ borderColor: 'var(--glass-border)' }}>
-                  <Gift size={32} className="mx-auto mb-2 opacity-50" />
-                  <p>Nenhum aniversariante hoje.</p>
+          {/* ── Seção: Hoje ──────────────────────────────────────────── */}
+          <section className={styles.sectionToday} aria-labelledby="hoje-titulo">
+            <div className={styles.sectionHeader}>
+              <h2 id="hoje-titulo" className={styles.sectionTitle}>
+                Hoje
+                {hoje.length > 0 && <span className="pulse-dot" aria-hidden="true" />}
+              </h2>
+              <span className={styles.sectionMeta}>
+                {hoje.length} aniversariante{hoje.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+
+            {hoje.length === 0 ? (
+              <div className={`glass-panel ${styles.emptyCard}`}>
+                <div className="empty-state">
+                  <span className="material-symbols-outlined empty-state__icon" style={{ fontSize: '32px' }} aria-hidden="true">celebration</span>
+                  <p className="empty-state__title">Ninguém hoje!</p>
+                  <p className="empty-state__desc">Nenhum aniversariante para o dia de hoje.</p>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.todayGrid}>
+                {hoje.map((person) => (
+                  <article key={person.id} className={`glass-panel ${styles.birthdayCard} ${styles.birthdayCardActive}`}>
+                    <div className={styles.cardHeader}>
+                      <div className={`avatar avatar-lg ${styles.avatarActive}`}>
+                        {getInitials(person.nome)}
+                      </div>
+                      <div className={styles.cardInfo}>
+                        <h3 className={styles.cardName}>{person.nome}</h3>
+                        <p className={styles.cardRole}>{person.cargo_principal || 'Colaborador'}</p>
+                      </div>
+                    </div>
+                    <div className={styles.cardDate}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }} aria-hidden="true">cake</span>
+                      {formatDayMonth(person.data_nascimento)}
+                    </div>
+                    <div className={styles.cardActions}>
+                      <button
+                        className={`outline-btn ${styles.copyBtn}`}
+                        title="Copiar dados"
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${person.nome} — ${person.cargo_principal || ''} — ${formatDayMonth(person.data_nascimento)}`);
+                        }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: '15px' }} aria-hidden="true">content_copy</span>
+                        Copiar Dados
+                      </button>
+                      <button className="brand-btn" style={{ padding: '8px' }} title="Celebrar" aria-label={`Celebrar aniversário de ${person.nome}`}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }} aria-hidden="true">celebration</span>
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* ── Seção: Próximos Dias ─────────────────────────────────── */}
+          <section className={styles.sectionUpcoming} aria-labelledby="proximos-titulo">
+            <div className={styles.sectionHeader}>
+              <h2 id="proximos-titulo" className={styles.sectionTitle}>Próximos Dias</h2>
+              <a href="#" className={styles.sectionLink}>Ver todos</a>
+            </div>
+
+            <div className="glass-panel" style={{ overflow: 'hidden' }}>
+              {upcoming.length === 0 ? (
+                <div className="empty-state">
+                  <span className="material-symbols-outlined empty-state__icon" style={{ fontSize: '28px' }} aria-hidden="true">event_available</span>
+                  <p className="empty-state__desc" style={{ padding: 0 }}>Nenhum aniversariante esta semana.</p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-4">
-                  {hoje.map((person) => (
-                    <div key={person.id} className="glass-panel p-4 flex justify-between items-center" style={{ background: 'rgba(16, 185, 129, 0.1)', borderColor: 'rgba(16, 185, 129, 0.2)' }}>
-                      <div className="flex items-center gap-4">
-                        <div className="bg-badge-success rounded-full p-2">
-                          <UserRound size={20} />
+                <ul className={styles.upcomingList} role="list">
+                  {upcoming.map((person) => (
+                    <li key={person.id} className={styles.upcomingItem}>
+                      <div className={styles.upcomingLeft}>
+                        <div className="avatar avatar-md">
+                          {getInitials(person.nome)}
                         </div>
                         <div>
-                          <h3 className="font-bold text-lg">{person.nome}</h3>
-                          <p className="text-sm text-muted flex items-center gap-2">
-                            <Briefcase size={14} /> {person.cargo_principal || 'Sem cargo definido'}
+                          <p className={styles.upcomingName}>{person.nome}</p>
+                          <p className={styles.upcomingDate}>
+                            {formatDayMonthLong(person.data_nascimento)}
                           </p>
                         </div>
                       </div>
-                      <div className="font-bold text-xl text-gradient">
-                        {formatDate(person.data_nascimento)}
-                      </div>
-                    </div>
+                      <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--color-on-surface-variant)', opacity: 0 }} aria-hidden="true">
+                        chevron_right
+                      </span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               )}
-            </section>
-
-            {/* Coluna Semana */}
-            <section className="glass-panel p-6">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 bg-badge rounded-full flex items-center justify-center">
-                  <Calendar size={24} />
-                </div>
-                <h2 className="text-2xl">Mais nesta semana</h2>
-              </div>
-
-              {semana.length === 0 ? (
-                <div className="text-center text-muted p-6 border border-dashed rounded-xl" style={{ borderColor: 'var(--glass-border)' }}>
-                  <Calendar size={32} className="mx-auto mb-2 opacity-50" />
-                  <p>Ninguém mais faz aniversário esta semana.</p>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-4">
-                  {semana.map((person) => (
-                    <div key={person.id} className="flex justify-between items-center p-4 border-b border-dashed" style={{ borderColor: 'var(--glass-border)' }}>
-                      <div>
-                        <h3 className="font-semibold text-lg">{person.nome}</h3>
-                        <p className="text-sm text-muted">{person.cargo_principal || 'Sem cargo'}</p>
-                      </div>
-                      <div className="font-bold">
-                        {formatDate(person.data_nascimento)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          </div>
-
-          {/* Tabela de Todos por Mês */}
-          <section className="glass-panel p-6 mt-8">
-            <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-badge rounded-full flex items-center justify-center">
-                  <TableIcon size={24} />
-                </div>
-                <h2 className="text-2xl">Aniversariantes do Mês</h2>
-              </div>
-              <select 
-                value={selectedMonth} 
-                onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                className="p-2 rounded bg-[#1e293b] border border-[#334155] text-white outline-none"
-              >
-                {meses.map(m => (
-                  <option key={m.value} value={m.value}>{m.label}</option>
-                ))}
-              </select>
             </div>
-
-            {aniversariantesDoMes.length === 0 ? (
-              <div className="text-center text-muted p-6 border border-dashed rounded-xl" style={{ borderColor: 'var(--glass-border)' }}>
-                <TableIcon size={32} className="mx-auto mb-2 opacity-50" />
-                <p>Nenhum aniversariante neste mês.</p>
-              </div>
-            ) : (
-              <div className="table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Data</th>
-                      <th>Nome</th>
-                      <th>Cargo / Área</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {aniversariantesDoMes.map(person => (
-                      <tr key={person.id}>
-                        <td className="font-bold text-gradient">{formatDate(person.data_nascimento)}</td>
-                        <td className="font-semibold">{person.nome}</td>
-                        <td className="text-muted text-sm">{person.cargo_principal || '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </section>
 
-          {/* Seção de Configurações — Destinatários de E-mail */}
-          <section className="glass-panel p-6 mt-8">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="p-3 bg-badge rounded-full flex items-center justify-center">
-                <Mail size={24} />
-              </div>
-              <div>
-                <h2 className="text-2xl">Configurações de E-mail</h2>
-                <p className="text-muted text-sm">Gerencie quem recebe os e-mails automáticos de aniversariantes.</p>
-              </div>
-            </div>
-
-            {/* Formulário de adição */}
-            <div className="flex gap-3 mb-6">
-              <input
-                id="input-novo-email"
-                type="email"
-                placeholder="novo@email.com.br"
-                value={novoEmail}
-                onChange={e => setNovoEmail(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && adicionarEmail()}
-                className="flex-1 p-3 rounded-lg bg-[#1e293b] border border-[#334155] text-white outline-none focus:border-[#6366f1] transition-colors"
-              />
-              <button
-                id="btn-adicionar-email"
-                onClick={adicionarEmail}
-                disabled={emailLoading}
-                className="flex items-center gap-2 px-5 py-3 rounded-lg font-semibold transition-opacity disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
-              >
-                <Plus size={18} />
-                {emailLoading ? 'Adicionando...' : 'Adicionar'}
-              </button>
-            </div>
-
-            {/* Feedback */}
-            {emailFeedback && (
-              <p className={`text-sm mb-4 px-3 py-2 rounded-lg ${
-                emailFeedback.type === 'ok'
-                  ? 'bg-badge-success text-white'
-                  : 'bg-red-500/20 text-red-300'
-              }`}>
-                {emailFeedback.msg}
-              </p>
-            )}
-
-            {/* Lista de destinatários */}
-            {destinatarios.length === 0 ? (
-              <div className="text-center text-muted p-6 border border-dashed rounded-xl" style={{ borderColor: 'var(--glass-border)' }}>
-                <Mail size={32} className="mx-auto mb-2 opacity-50" />
-                <p>Nenhum destinatário cadastrado ainda.</p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {destinatarios.map(d => (
-                  <div
-                    key={d.id}
-                    className="flex justify-between items-center p-4 rounded-lg"
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Mail size={16} className="text-muted" />
-                      <span className="font-mono text-sm">{d.email}</span>
+          {/* ── Seção: Frequência Mensal (Gráfico) ────────────────────── */}
+          <section className={styles.sectionChart} aria-labelledby="chart-titulo">
+            <h2 id="chart-titulo" className={styles.sectionTitle}>Frequência Mensal</h2>
+            <div className={`glass-panel ${styles.chartPanel}`}>
+              <div className={styles.chartBars} role="img" aria-label={`Gráfico de aniversariantes por semana em ${currentMonthName}`}>
+                {weekBuckets.map((bucket) => {
+                  const heightPct = Math.round((bucket.count / maxBucketCount) * 100);
+                  const isHighest = bucket.count === maxBucketCount && bucket.count > 0;
+                  return (
+                    <div key={bucket.label} className={styles.barColumn}>
+                      <div className={styles.barTrack}>
+                        <div
+                          className={`${styles.bar} ${isHighest ? styles.barHighlight : ''}`}
+                          style={{ height: `${Math.max(heightPct, bucket.count > 0 ? 8 : 4)}%` }}
+                          title={`${bucket.label}: ${bucket.count} aniversariante${bucket.count !== 1 ? 's' : ''}`}
+                        />
+                      </div>
+                      <span className={styles.barLabel}>{bucket.label}</span>
                     </div>
-                    <button
-                      id={`btn-remover-email-${d.id}`}
-                      onClick={() => removerEmail(d.id)}
-                      className="p-2 rounded-lg text-red-400 hover:bg-red-500/20 transition-colors"
-                      title="Remover destinatário"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                  );
+                })}
+              </div>
+              <div className={styles.chartFooter}>
+                <p className={styles.chartTotal}>
+                  Total de <strong>{mesAtual.length}</strong> aniversariante{mesAtual.length !== 1 ? 's' : ''} em{' '}
+                  <span style={{ textTransform: 'capitalize' }}>{currentMonthName}</span>
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* ── Seção: Configurações de E-mail ────────────────────────── */}
+          <section id="email-settings" className={styles.sectionEmail} aria-labelledby="email-titulo">
+            <h2 id="email-titulo" className={styles.sectionTitle}>Configurações de E-mail</h2>
+            <div className={`glass-panel ${styles.emailPanel}`}>
+
+              {/* Add form */}
+              <div className={styles.emailForm}>
+                <input
+                  id="input-novo-email"
+                  type="email"
+                  placeholder="nome@empresa.com"
+                  value={novoEmail}
+                  onChange={(e) => setNovoEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && adicionarEmail()}
+                  className="field-input"
+                />
+                <button
+                  id="btn-adicionar-email"
+                  onClick={adicionarEmail}
+                  disabled={emailLoading}
+                  className="brand-btn"
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  {emailLoading ? 'Adicionando...' : 'Adicionar'}
+                </button>
+              </div>
+
+              {/* Feedback */}
+              {emailFeedback && (
+                <p className={emailFeedback.type === 'ok' ? 'feedback-ok' : 'feedback-err'} role="alert">
+                  {emailFeedback.msg}
+                </p>
+              )}
+
+              {/* Recipients list */}
+              <div className={styles.recipientList}>
+                {destinatarios.length === 0 ? (
+                  <div className="empty-state" style={{ padding: 'var(--space-6)' }}>
+                    <span className="material-symbols-outlined empty-state__icon" style={{ fontSize: '24px' }} aria-hidden="true">mail_outline</span>
+                    <p className="empty-state__desc" style={{ padding: 0 }}>Nenhum destinatário cadastrado.</p>
                   </div>
-                ))}
+                ) : (
+                  <ul role="list" style={{ listStyle: 'none' }}>
+                    {destinatarios.map((d) => (
+                      <li key={d.id} className={styles.recipientItem}>
+                        <div className={styles.recipientLeft}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--color-on-surface-variant)' }} aria-hidden="true">
+                            alternate_email
+                          </span>
+                          <span className={styles.recipientEmail}>{d.email}</span>
+                        </div>
+                        <button
+                          id={`btn-remover-email-${d.id}`}
+                          onClick={() => removerEmail(d.id)}
+                          className="ghost-btn"
+                          style={{ color: 'var(--color-error)', padding: '6px' }}
+                          title={`Remover ${d.email}`}
+                          aria-label={`Remover destinatário ${d.email}`}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }} aria-hidden="true">delete</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
-            )}
+
+              {/* Weekly digest toggle */}
+              <div className={styles.digestToggle}>
+                <input
+                  type="checkbox"
+                  id="resumo-semanal"
+                  checked={resumoSemanal}
+                  onChange={(e) => setResumoSemanal(e.target.checked)}
+                  className={styles.toggleCheck}
+                />
+                <label htmlFor="resumo-semanal" className={styles.digestLabel}>
+                  Enviar resumo semanal automaticamente
+                </label>
+              </div>
+
+            </div>
           </section>
-        </>
+
+        </div>
       )}
     </main>
   );

@@ -54,21 +54,21 @@ export async function GET(
     `;
 
     if (aniversariantes.length === 0) {
-      html += `<p style="text-align: center; color: #666;">Não temos aniversariantes neste período.</p>`;
-    } else {
-      html += `<ul style="list-style: none; padding: 0;">`;
-      aniversariantes.forEach(c => {
-        // Extrai dia e mês para exibição amigável
-        const data = c.data_nascimento ? new Date(c.data_nascimento).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '';
-        html += `
-          <li style="padding: 10px; background-color: #f9fafb; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between;">
-            <strong>${c.nome}</strong>
-            <span style="color: #666;">${data} ${c.cargo_principal ? `- ${c.cargo_principal}` : ''}</span>
-          </li>
-        `;
-      });
-      html += `</ul>`;
+      return NextResponse.json({ ok: true, message: 'Nenhum aniversariante no período. E-mail não enviado.', count: 0 });
     }
+
+    html += `<ul style="list-style: none; padding: 0;">`;
+    aniversariantes.forEach(c => {
+      // Extrai dia e mês para exibição amigável
+      const data = c.data_nascimento ? new Date(c.data_nascimento).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '';
+      html += `
+        <li style="padding: 10px; background-color: #f9fafb; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between;">
+          <strong>${c.nome}</strong>
+          <span style="color: #666;">${data} ${c.cargo_principal ? `- ${c.cargo_principal}` : ''}</span>
+        </li>
+      `;
+    });
+    html += `</ul>`;
 
     html += `
         <hr style="border: none; border-top: 1px solid #eaeaea; margin: 20px 0;" />

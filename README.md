@@ -11,7 +11,7 @@ Este projeto é um painel e sistema de notificações automatizadas para anivers
 
 ## Tecnologias e Funcionalidades
 
-- **Frontend/Backend Web:** Next.js (React), TailwindCSS.
+- **Frontend/Backend Web:** Next.js (React), TailwindCSS, CSS Modules e Bento Grid.
 - **Banco de Dados Intermediário:** SQLite (acessado via `better-sqlite3`).
 - **Automações:** Envio de E-mails (Nodemailer via API routes no Next).
 - **Segurança:** Autenticação no painel web, proteção de cron jobs com `CRON_SECRET` e proxy interno para acesso a dados protegidos.

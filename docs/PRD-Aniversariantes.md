@@ -43,10 +43,10 @@ Criar uma solução que centralize e distribua a informação de aniversariantes
 - Atualização automática a partir do banco de colaboradores (sync periódico, não precisa ser "real time" no sentido literal — ver seção 8).
 - Acesso via login interno (não pode ser público, ver seção 9 — LGPD).
 
-### 5.2 E-mail de Aniversariantes (Diário, Semanal ou Mensal)
-- Disparo toda segunda-feira de manhã.
-- Lista os aniversariantes do período solicitado (dia, semana ou mês).
-- Enviado para uma lista de distribuição configurável (Marketing + Financeiro + quem mais for adicionado), dependendo do cron job configurado.
+### 5.2 E-mail de Aniversariantes
+- Disparo toda segunda-feira de manhã para o resumo semanal, ou no primeiro dia do mês para o resumo mensal.
+- **Importante:** O e-mail só é enviado se houver aniversariantes no período.
+- Enviado para a lista de distribuição configurável no painel web (tabela `email_destinatarios`).
 
 ## 6. Fora de escopo (Fase 1)
 
@@ -99,6 +99,6 @@ Esse ponto é o mais crítico tecnicamente e o que mais vai definir prazo — ve
 |---|---|
 | 0 | Validar perguntas da seção 9 (principalmente infra da VPN) |
 | 1 | Job de sync do DB → base intermediária |
-| 2 | Painel web (leitura) |
-| 3 | E-mail de Aniversariantes via backend interno (Next.js) + Cron Job |
+| 2 | E-mail de Aniversariantes via backend interno (Next.js) + Cron Job |
+| 3 | Fase 2: Refinamento Visual (Dashboard Hubon Glassmorphism) e gestão de E-mails via UI |
 
